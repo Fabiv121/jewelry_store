@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+    <script>
+        function startCountdown(remainingTime) {
+            let countdownElement = document.getElementById("countdown");
+            let loginButton = document.getElementById("login-button");
+
+            function updateCountdown() {
+                if (remainingTime <= 0) {
+                    countdownElement.innerHTML = "You can now try again.";
+                    loginButton.disabled = false; // Enable login button
+                    return;
+                }
+
+                countdownElement.innerHTML = "Too many failed attempts. Try again in " + remainingTime + " seconds.";
+                loginButton.disabled = true; // Keep button disabled
+                remainingTime--;
+
+                setTimeout(updateCountdown, 1000); // Repeat every second
+            }
+
+            updateCountdown(); // Start countdown
+        }
+
+        // Automatically start countdown if remaining_time is provided
+        window.onload = function () {
+            let remainingTime = parseInt("{{ remaining_time | default(0) }}");
+            if (remainingTime > 0) {
+                startCountdown(remainingTime);
+            }
+        };
+    </script>
+</head>
+<body>
+    <h2>Login</h2>
+
+    {% if error %}
+        <p style="color: red;" id="countdown">{{ error }}</p>
+    {% endif %}
+
+    <form method="POST">
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <button type="submit" id="login-button" {% if remaining_time > 0 %}disabled{% endif %}>Login</button>
+    </form>
+
+    <p>Don't have an account? <a href="/register">Register here</a></p>
+    
+    <hr>
+    <p>Or</p>
+    <a href="{{ url_for('customize') }}" class="guest-button">Continue as Guest</a>
+</body>
+</html>

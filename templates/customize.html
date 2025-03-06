@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customize Your Jewelry</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+    <script>
+        function updateJewelryImage() {
+            let jewelryType = document.querySelector('input[name="jewelry_type"]:checked').value.toLowerCase();
+            let metal = document.querySelector('input[name="metal"]:checked').value.toLowerCase().replace(" ", "_");
+            let gemstoneElement = document.querySelector('input[name="gemstone"]:checked');
+            let gemstone = gemstoneElement ? gemstoneElement.value.toLowerCase() : "";
+    
+            let previewImage = document.getElementById("previewImage");
+            let gemstoneSection = document.getElementById("gemstone-section");
+    
+            // Hide gemstone selection if Watch is selected
+            gemstoneSection.style.display = (jewelryType === "watch") ? "none" : "block";
+    
+            // Define possible image file names
+            let basePath = "{{ url_for('static', filename='images/') }}";
+            let imageName = `${jewelryType}_${metal}`;
+    
+            if (gemstone && jewelryType !== "watch") {
+                imageName += `_${gemstone}`;
+            }
+    
+            let possibleExtensions = [".jpg", ".jpeg"];
+            let foundImage = false;
+    
+            for (let ext of possibleExtensions) {
+                let testSrc = basePath + imageName + ext;
+                let img = new Image();
+                img.src = testSrc;
+    
+                img.onload = function () {
+                    previewImage.src = testSrc;
+                    foundImage = true;
+                };
+    
+                img.onerror = function () {
+                    if (!foundImage) {
+                        previewImage.src = basePath + "default.jpg";
+                    }
+                };
+            }
+        }
+    
+        // Function to allow gemstone deselection
+        document.addEventListener("DOMContentLoaded", function () {
+            let gemstoneRadios = document.querySelectorAll('input[name="gemstone"]');
+    
+            gemstoneRadios.forEach(radio => {
+                radio.addEventListener("click", function () {
+                    if (this.checked && this.dataset.selected === "true") {
+                        this.checked = false;
+                        this.dataset.selected = "false";
+                        updateJewelryImage(); // Update image when deselecting
+                    } else {
+                        gemstoneRadios.forEach(r => r.dataset.selected = "false");
+                        this.dataset.selected = "true";
+                    }
+                });
+            });
+        });
+    </script>    
+     
+</head>
+
+<!-- Navigation Bar -->
+<nav style="display: flex; justify-content: space-between; align-items: center; padding: 10px;">
+    <div>
+        {% if user %}
+            <p>Welcome, {{ user }}! 
+                <a href="{{ url_for('logout') }}">Logout</a> | 
+                <a href="{{ url_for('change_password') }}">Change Password</a>
+            </p>
+        {% else %}
+            <p>Browsing as a Guest. <a href="{{ url_for('login') }}">Login</a> | <a href="{{ url_for('register') }}">Register</a></p>
+        {% endif %}
+    </div>
+
+    <!-- Cart Icon -->
+    <div>
+        <a href="{{ url_for('view_orders') }}" style="text-decoration: none; color: black;">
+            🛒 <span style="font-size: 24px;">Cart</span>
+        </a>
+    </div>
+</nav>
+<hr>
+
+<form method="POST" action="/customize">
+    
+    <!-- Jewelry Type Selection -->
+    <h2>Select a Jewelry Type</h2>
+    <div class="options">
+        <label class="jewelry-option">
+            <input type="radio" name="jewelry_type" value="Ring" checked onclick="updateJewelryImage()">
+            <img src="{{ url_for('static', filename='images/ring_gold.jpg') }}" alt="Ring" class="selectable">
+            Ring
+        </label>
+        <label class="jewelry-option">
+            <input type="radio" name="jewelry_type" value="Necklace" onclick="updateJewelryImage()">
+            <img src="{{ url_for('static', filename='images/necklace_gold.jpg') }}" alt="Necklace" class="selectable">
+            Necklace
+        </label>
+        <label class="jewelry-option">
+            <input type="radio" name="jewelry_type" value="Watch" onclick="updateJewelryImage()">
+            <img src="{{ url_for('static', filename='images/watch_gold.jpg') }}" alt="Watch" class="selectable">
+            Watch
+        </label>
+    </div>
+
+    <!-- Metal Selection -->
+    <h2>Choose a Metal</h2>
+    <div class="options">
+        <label class="metal-option">
+            <input type="radio" name="metal" value="Gold" checked onchange="updateJewelryImage()">
+            <img src="{{ url_for('static', filename='images/gold.jpg') }}" alt="Gold" class="selectable">
+            Gold
+        </label>
+        <label class="metal-option">
+            <input type="radio" name="metal" value="Silver" onchange="updateJewelryImage()">
+            <img src="{{ url_for('static', filename='images/silver.jpg') }}" alt="Silver" class="selectable">
+            Silver
+        </label>
+        <label class="metal-option">
+            <input type="radio" name="metal" value="Platinum" onchange="updateJewelryImage()">
+            <img src="{{ url_for('static', filename='images/platinum.jpg') }}" alt="Platinum" class="selectable">
+            Platinum
+        </label>
+        <label class="metal-option">
+            <input type="radio" name="metal" value="Rose Gold" onchange="updateJewelryImage()">
+            <img src="{{ url_for('static', filename='images/rose_gold.jpg') }}" alt="Rose Gold" class="selectable">
+            Rose Gold
+        </label>
+    </div>
+
+    <!-- Gemstone Selection (Hidden for Watches) -->
+    <div id="gemstone-section">
+        <h2>Choose a Gemstone</h2>
+        <div class="options">
+            <label class="gemstone-option">
+                <input type="radio" name="gemstone" value="Diamond" onchange="updateJewelryImage()">
+                <img src="{{ url_for('static', filename='images/diamond.jpg') }}" alt="Diamond" class="selectable">
+                Diamond
+            </label>
+            <label class="gemstone-option">
+                <input type="radio" name="gemstone" value="Ruby" onchange="updateJewelryImage()">
+                <img src="{{ url_for('static', filename='images/ruby.jpg') }}" alt="Ruby" class="selectable">
+                Ruby
+            </label>
+            <label class="gemstone-option">
+                <input type="radio" name="gemstone" value="Sapphire" onchange="updateJewelryImage()">
+                <img src="{{ url_for('static', filename='images/sapphire.jpg') }}" alt="Sapphire" class="selectable">
+                Sapphire
+            </label>
+            <label class="gemstone-option">
+                <input type="radio" name="gemstone" value="Emerald" onchange="updateJewelryImage()">
+                <img src="{{ url_for('static', filename='images/emerald.jpg') }}" alt="Emerald" class="selectable">
+                Emerald
+            </label>
+            <label class="gemstone-option">
+                <input type="radio" name="gemstone" value="Topaz" onchange="updateJewelryImage()">
+                <img src="{{ url_for('static', filename='images/topaz.jpg') }}" alt="Topaz" class="selectable">
+                Topaz
+            </label>
+        </div>
+    </div>
+
+    <!-- Save Order Button -->
+    {% if user %}
+    <button type="submit">Save Order</button>
+{% else %}
+    <p><strong>You must <a href="/login">log in</a> to save an order.</strong></p>
+{% endif %}
+</form>
+
+<!-- Right Side: Live Preview -->
+<div class="preview-section">
+    <h2>Live Preview</h2>
+    <img id="previewImage" src="{{ url_for('static', filename='images/ring_gold.jpg') }}" alt="Jewelry Preview">
+</div>
