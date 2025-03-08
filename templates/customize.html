@@ -1,5 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+    <!-- Home Button with Icon at the Top Center -->
+<div style="text-align: center; margin-bottom: 20px;">
+    <a href="{{ url_for('home') }}" style="text-decoration: none;">
+        <button style="background-color: black; color: white; font-size: 18px; padding: 10px 20px; 
+                       border: none; border-radius: 5px; cursor: pointer; display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-home"></i> Home
+        </button>
+    </a>
+</div>
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -68,18 +78,30 @@
      
 </head>
 
+
 <!-- Navigation Bar -->
 <nav style="display: flex; justify-content: space-between; align-items: center; padding: 10px;">
-    <div>
-        {% if user %}
-            <p>Welcome, {{ user }}! 
-                <a href="{{ url_for('logout') }}">Logout</a> | 
-                <a href="{{ url_for('change_password') }}">Change Password</a>
-            </p>
-        {% else %}
-            <p>Browsing as a Guest. <a href="{{ url_for('login') }}">Login</a> | <a href="{{ url_for('register') }}">Register</a></p>
-        {% endif %}
-    </div>
+
+   
+<!-- User Navigation -->
+<div style="text-align: center; margin-bottom: 20px;">
+    {% if user %}
+        <p>Welcome, <strong>{{ user }}</strong>!  
+            <a href="{{ url_for('logout') }}" style="text-decoration: none; font-weight: bold;">Logout</a>
+        </p>
+    {% elif is_guest %}
+        <p>You are browsing as a Guest.</p>
+    {% else %}
+        <p>
+            <a href="{{ url_for('login') }}" style="text-decoration: none; font-weight: bold;">Login</a> |  
+            <a href="{{ url_for('register') }}" style="text-decoration: none; font-weight: bold;">Register</a>
+        </p>
+    {% endif %}
+</div>
+
+
+
+
 
     <!-- Cart Icon -->
     <div>

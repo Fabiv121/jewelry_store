@@ -1,5 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+    <!-- Home Button with Icon at the Top Center -->
+<div style="text-align: center; margin-bottom: 20px;">
+    <a href="{{ url_for('home') }}" style="text-decoration: none;">
+        <button style="background-color: black; color: white; font-size: 18px; padding: 10px 20px; 
+                       border: none; border-radius: 5px; cursor: pointer; display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-home"></i> Home
+        </button>
+    </a>
+</div>
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -53,6 +63,21 @@
     
     <hr>
     <p>Or</p>
-    <a href="{{ url_for('customize') }}" class="guest-button">Continue as Guest</a>
+    
+<!-- Continue as Guest Button -->
+<div style="text-align: center; margin-top: 20px;">
+    <a href="{{ url_for('customize', guest='true') }}" style="text-decoration: none;">
+        <button style="
+            background-color: black;
+            color: white;
+            font-size: 18px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;">
+            Continue as Guest
+        </button>
+    </a>
+</div>
 </body>
 </html>

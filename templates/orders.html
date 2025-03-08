@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order History</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <nav>
@@ -16,22 +17,119 @@
     </nav>
     <hr>    
     <h2>Orders for {{ user }}</h2>
-    <table>
+
+<!-- Home Button with Icon at the Top Center -->
+<div style="text-align: center; margin-bottom: 20px;">
+    <a href="{{ url_for('home') }}" style="text-decoration: none;">
+        <button style="background-color: black; color: white; font-size: 18px; padding: 10px 20px; 
+                       border: none; border-radius: 5px; cursor: pointer; display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-home"></i> Home
+        </button>
+    </a>
+</div>
+
+
+    <table style="width: 100%;">
         <tr>
             <th>Jewelry Type</th>
             <th>Metal</th>
             <th>Gemstone</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th style="text-align: right;">Action</th>
         </tr>
         {% for order in orders %}
         <tr>
-            <td>{{ order[0] }}</td>
-            <td>{{ order[1] }}</td>
-            <td>{{ order[2] }}</td>
+            <td>{{ order[1] }}</td> <!-- Jewelry Type -->
+            <td>{{ order[2] }}</td> <!-- Metal -->
+            <td>{{ order[3] }}</td> <!-- Gemstone -->
+    
+            <!-- Quantity + and - Buttons -->
+            <td style="text-align: center;">
+                <form action="{{ url_for('update_quantity', order_id=order[0]) }}" method="POST"
+                    style="display: flex; align-items: center; gap: 8px; justify-content: center;">
+                    
+                    <!-- Decrease Button -->
+                    <button type="submit" name="action" value="decrease"
+                        style="border: none; background: white; color: black; font-size: 16px; padding: 5px 8px; 
+                        border-radius: 5px; cursor: pointer;">
+                        ➖
+                    </button>
+    
+                    <!-- Quantity Display -->
+                    <div style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; 
+                        font-size: 16px; font-weight: bold; background: white; color: black;">
+                        {{ order[4] }} <!-- Displays Current Quantity -->
+                    </div>
+    
+                    <!-- Increase Button -->
+                    <button type="submit" name="action" value="increase"
+                        style="border: none; background: white; color: black; font-size: 16px; padding: 5px 8px; 
+                        border-radius: 5px; cursor: pointer;">
+                        ➕
+                    </button>
+                </form>
+            </td>
+    
+            <!-- Price Column -->
+            <td>${{ '%.2f' | format(order[5] * order[4]) }}</td> <!-- Price (Price x Quantity) -->
+    
+            <!-- Delete Button -->
+            <td style="text-align: right;">
+                <form action="{{ url_for('remove_order', order_id=order[0]) }}" method="POST">
+                    <button type="submit" class="delete-button"
+                        style="border: none; background: white; color: black; font-size: 14px; padding: 5px 10px; 
+                        cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                        <span style="font-size: 14px;">Delete</span>
+                        <i class="fa-solid fa-trash" style="color: black; font-size: 14px;"></i>
+                    </button>
+                </form>
+            </td>
         </tr>
         {% endfor %}
+        
+        <!-- New Row for Total Amount -->
+        <tr>
+            <td colspan="3" style="font-weight: bold; text-align: right; padding: 10px;">Total Quantity:</td>
+            <td style="text-align: center; font-weight: bold;">
+                {{ total_quantity }}  <!-- Displays Total Quantity -->
+            </td>
+            <td style="font-weight: bold;">Total: ${{ '%.2f' | format(total_price) }}</td>
+            <td></td> <!-- Empty for alignment -->
+        </tr>
     </table>
     
+    
+    
+    
     <br>
-    <a href="/customize">Customize Another Jewelry</a>
+    <!-- Customize Your Jewelry Section -->
+<div style="text-align: center; margin-top: 30px;">
+    <a href="{{ url_for('customize') }}" style="text-decoration: none;">
+        <div style="
+            display: inline-block;
+            padding: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            border: 5px solid gold;
+            border-radius: 15px;
+            background-image: url('{{ url_for('static', filename='images/jewelry-bg.jpg') }}');
+            background-size: cover;
+            background-position: center;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+        ">
+            ✨ Customize Your Jewelry ✨
+        </div>
+    </a>
+</div>
+
+    <!-- Disclaimer Message -->
+<div style="text-align: center; margin-top: 20px;">
+    <p style="font-size: 24px; font-weight: bold; color: red;">
+        This is just a project, none of the items are actually for sale.
+    </p>
+</div>
+
 </body>
 </html>

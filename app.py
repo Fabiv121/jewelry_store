@@ -24,37 +24,59 @@ def init_db():
 # Initialize the database when the app starts
 init_db()
 
-# Homepage Route
-@app.route('/')
-def home():
-    return render_template('index.html')
 
 # Customization Route
 @app.route('/customize', methods=['GET', 'POST'])
 def customize():
-    user = session.get('user')  # Check if user is logged in
+    user = session.get('user')  # Get logged-in user if available
+
+    # Convert guest param to a proper boolean
+    is_guest = request.args.get('guest', 'false').lower() == 'true'
+
+    if not user and not is_guest:
+        return redirect(url_for('login'))  # Redirect ONLY if neither user nor guest
 
     if request.method == 'POST':
-        if not user:
-            return "You must be logged in to save an order. <a href='/login'>Login here</a>"
+        jewelry_type = request.form.get('jewelry_type', "").strip()
+        metal = request.form.get('metal', "").strip()
+        gemstone = request.form.get('gemstone', "").strip() if jewelry_type != "Watch" else "None"
 
-        jewelry_type = request.form.get('jewelry_type')
-        metal = request.form.get('metal')
-        gemstone = request.form.get('gemstone') if jewelry_type != "Watch" else "None"
+        # Assign prices based on jewelry type
+        price_dict = {
+            "Ring": 150.0,
+            "Necklace": 200.0,
+            "Watch": 300.0,
+        }
+        price = price_dict.get(jewelry_type, 0.0)
 
-        conn = sqlite3.connect('jewelry_store.db')
-        c = conn.cursor()
-        c.execute("SELECT id FROM users WHERE username = ?", (user,))
-        user_id = c.fetchone()[0]
+        if user:  # Only store data if user is logged in
+            conn = sqlite3.connect('jewelry_store.db')
+            c = conn.cursor()
 
-        c.execute("INSERT INTO orders (jewelry_type, metal, gemstone, user_id) VALUES (?, ?, ?, ?)", 
-                  (jewelry_type, metal, gemstone, user_id))
-        conn.commit()
-        conn.close()
+            c.execute("SELECT id FROM users WHERE username = ?", (user,))
+            user_id = c.fetchone()[0]
 
-        return render_template('result.html', jewelry_type=jewelry_type, metal=metal, gemstone=gemstone, user=user)
+            # Check if the item already exists
+            c.execute("""
+                SELECT id, quantity FROM orders 
+                WHERE user_id = ? AND jewelry_type = ? AND metal = ? AND gemstone = ?
+            """, (user_id, jewelry_type, metal, gemstone))
 
-    return render_template('customize.html', user=user)
+            existing_order = c.fetchone()
+
+            if existing_order:
+                new_quantity = existing_order[1] + 1
+                c.execute("UPDATE orders SET quantity = ? WHERE id = ?", (new_quantity, existing_order[0]))
+            else:
+                c.execute("INSERT INTO orders (jewelry_type, metal, gemstone, user_id, quantity, price) VALUES (?, ?, ?, ?, ?, ?)", 
+                        (jewelry_type, metal, gemstone, user_id, 1, price))
+
+            conn.commit()
+            conn.close()
+
+        return redirect(url_for('view_orders'))
+
+    return render_template('customize.html', user=user, is_guest=is_guest)
 
 # Orders Route (View all saved orders)
 @app.route('/orders')
@@ -63,15 +85,25 @@ def view_orders():
         return redirect(url_for('login'))
 
     user = session['user']
+
     conn = sqlite3.connect('jewelry_store.db')
     c = conn.cursor()
-    c.execute("SELECT id FROM users WHERE username = ?", (user,))
-    user_id = c.fetchone()[0]
-
-    c.execute("SELECT jewelry_type, metal, gemstone FROM orders WHERE user_id = ?", (user_id,))
+    
+    # Fetch all orders for the logged-in user (include price)
+    c.execute("SELECT id, jewelry_type, metal, gemstone, quantity, price FROM orders WHERE user_id = (SELECT id FROM users WHERE username = ?)", (user,))
     orders = c.fetchall()
+
+    # Calculate total quantity
+    c.execute("SELECT SUM(quantity) FROM orders WHERE user_id = (SELECT id FROM users WHERE username = ?)", (user,))
+    total_quantity = c.fetchone()[0] or 0  # Default to 0 if no items
+
+    # Calculate total price
+    c.execute("SELECT SUM(quantity * price) FROM orders WHERE user_id = (SELECT id FROM users WHERE username = ?)", (user,))
+    total_price = c.fetchone()[0] or 0.0  # Default to 0.0 if no items
+
     conn.close()
-    return render_template('orders.html', orders=orders, user=user)
+
+    return render_template('orders.html', orders=orders, user=user, total_quantity=total_quantity, total_price=total_price)
 
 # Run Flask App
 if __name__ == '__main__':
@@ -204,19 +236,27 @@ def change_password():
 
         conn = sqlite3.connect('jewelry_store.db')
         c = conn.cursor()
+
+        # Get the stored password
         c.execute("SELECT password FROM users WHERE username = ?", (user,))
-        stored_password = c.fetchone()[0]
+        user_data = c.fetchone()
+
+        # Check if user exists
+        if user_data is None:
+            return render_template('change_password.html', error="User not found in database.")
+
+        stored_password = user_data[0]
 
         # Verify the current password
-        if not bcrypt.checkpw(current_password.encode('utf-8'), stored_password):
+        if not bcrypt.checkpw(current_password.encode('utf-8'), stored_password.encode('utf-8')):
             return render_template('change_password.html', error="Current password is incorrect.")
 
         # Check if new passwords match
         if new_password != confirm_password:
             return render_template('change_password.html', error="New passwords do not match.")
 
-        # Hash the new password before saving
-        hashed_new_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
+        # Hash and store the new password
+        hashed_new_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         c.execute("UPDATE users SET password = ? WHERE username = ?", (hashed_new_password, user))
         conn.commit()
         conn.close()
@@ -224,3 +264,57 @@ def change_password():
         return render_template('change_password.html', message="Password successfully changed!")
 
     return render_template('change_password.html')
+
+@app.route('/remove_order/<int:order_id>', methods=['POST'])
+def remove_order(order_id):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+
+    user = session['user']
+
+    conn = sqlite3.connect('jewelry_store.db')
+    c = conn.cursor()
+
+    # Ensure the order belongs to the logged-in user
+    c.execute("DELETE FROM orders WHERE id = ? AND user_id = (SELECT id FROM users WHERE username = ?)", 
+              (order_id, user))
+
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for('view_orders'))
+
+@app.route('/update_quantity/<int:order_id>', methods=['POST'])
+def update_quantity(order_id):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+
+    action = request.form.get('action')
+
+    conn = sqlite3.connect('jewelry_store.db')
+    c = conn.cursor()
+
+    # Get current quantity
+    c.execute("SELECT quantity FROM orders WHERE id = ?", (order_id,))
+    order = c.fetchone()
+
+    if order:
+        current_quantity = order[0]
+
+        if action == "increase":
+            new_quantity = current_quantity + 1
+            c.execute("UPDATE orders SET quantity = ? WHERE id = ?", (new_quantity, order_id))
+
+        elif action == "decrease" and current_quantity > 1:
+            new_quantity = current_quantity - 1
+            c.execute("UPDATE orders SET quantity = ? WHERE id = ?", (new_quantity, order_id))
+
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for('view_orders'))
+
+@app.route('/')
+def home():
+    user = session.get('user')  # Get the user from session
+    return render_template('index.html', user=user)

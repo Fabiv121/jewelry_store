@@ -169,3 +169,29 @@ nav span {
 .guest-button:hover {
     background-color: #a37400;
 }
+
+/* Fix for quantity display */
+.quantity-container {
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    color: black;
+    margin-bottom: 5px;
+}
+
+/* Ensure buttons are properly aligned */
+.quantity-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+/* Fix for delete button spacing */
+.delete-button {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+    color: red;
+}
