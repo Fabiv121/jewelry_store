@@ -79,6 +79,44 @@ def customize():
 
     return render_template('customize.html', user=user, is_guest=is_guest)
 
+
+
+@app.route('/tracking')
+def tracking():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+
+    user = session['user']
+
+    conn = sqlite3.connect('jewelry_store.db')
+    c = conn.cursor()
+
+    # Fetch only orders with status = "Processing"
+    c.execute('''
+        SELECT id, jewelry_type, metal, gemstone, quantity, price, status
+        FROM orders
+        WHERE user_id = (SELECT id FROM users WHERE username = ?)
+          AND status = 'Processing'
+    ''', (user,))
+    orders = c.fetchall()
+
+    # Calculate totals for processing orders
+    c.execute('''
+        SELECT SUM(quantity), SUM(quantity * price)
+        FROM orders
+        WHERE user_id = (SELECT id FROM users WHERE username = ?)
+          AND status = 'Processing'
+    ''', (user,))
+    totals = c.fetchone()
+    total_quantity = totals[0] or 0
+    total_price = totals[1] or 0.0
+
+    conn.close()
+
+    return render_template('tracking.html', user=user, orders=orders,
+                           total_quantity=total_quantity, total_price=total_price)
+
+
 # Orders Route (View all saved orders)
 @app.route('/orders')
 def view_orders():
@@ -90,9 +128,9 @@ def view_orders():
     conn = sqlite3.connect('jewelry_store.db')
     c = conn.cursor()
 
-    # Fetch all orders for the user
+    # Fetch all orders for the user, now including status
     c.execute('''
-        SELECT id, jewelry_type, metal, gemstone, quantity, price
+        SELECT id, jewelry_type, metal, gemstone, quantity, price, status
         FROM orders
         WHERE user_id = (SELECT id FROM users WHERE username = ?)
     ''', (user,))
@@ -107,8 +145,13 @@ def view_orders():
 
     conn.close()
 
-    #  Ensure user, orders, totals are passed to the template
-    return render_template('orders.html', user=user, orders=orders, total_quantity=total_quantity, total_price=total_price)
+    return render_template(
+        'orders.html',
+        user=user,
+        orders=orders,
+        total_quantity=total_quantity,
+        total_price=total_price
+    )
 
 
 # Run Flask App

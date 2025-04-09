@@ -1,62 +1,56 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
     <title>Order Confirmation</title>
     <style>
         body {
             margin: 0;
             padding: 0;
             background-image: url("{{ url_for('static', filename='images/confirmation-background.png') }}");
-            background-size: cover;
+            background-size: contain;
             background-position: center;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-repeat: no-repeat;
+            background-color: #f0f0f0;
+            height: 100vh;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
             text-align: center;
-            color: #3c1e5c;
-        }
-
-        .confirmation-box {
-            background-color: rgba(255, 255, 255, 0.85);
-            padding: 30px 50px;
-            border-radius: 20px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
-            max-width: 600px;
+            font-family: 'Segoe UI', sans-serif;
+            color: #333;
         }
 
         h1 {
             font-size: 36px;
             margin-bottom: 10px;
+            color: #5b2c83;
         }
 
         p {
-            font-size: 20px;
-            margin-bottom: 25px;
+            font-size: 18px;
+            margin-bottom: 20px;
         }
 
         a {
             text-decoration: none;
-            background-color: #4a148c;
             color: white;
+            background-color: #5b2c83;
             padding: 12px 24px;
-            border-radius: 10px;
-            font-size: 18px;
+            border-radius: 8px;
+            font-size: 16px;
             transition: background-color 0.3s ease;
         }
 
         a:hover {
-            background-color: #6a1b9a;
+            background-color: #4a1c6e;
         }
     </style>
 </head>
 <body>
-    <div class="confirmation-box">
-        <h1>Thank you, {{ name }}!</h1>
-        <p>Your order has been received. We'll ship it to you soon.</p>
-        <a href="{{ url_for('home') }}">Back to Home</a>
-    </div>
+    <h1>Thank you, {{ name }}!</h1>
+    <p>Your order has been received. We'll ship it to you soon.</p>
+    <a href="{{ url_for('home') }}">Back to Home</a>
 </body>
 </html>
+
