@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Delete Account</title>
+</head>
+<body>
+    <h1>Delete Your Account</h1>
+    <p>This will permanently remove your account and all associated orders.</p>
+    <form method="POST">
+        <button type="submit" style="background-color: red; color: white;">Yes, delete my account</button>
+        <a href="{{ url_for('home') }}">Cancel</a>
+    </form>
+</body>
+</html>

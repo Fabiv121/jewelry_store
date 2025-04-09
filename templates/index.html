@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
-    <!-- Home Button with Icon at the Top Center -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jewelry Store</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+<!-- Home Button with Icon at the Top Center -->
 <div style="text-align: center; margin-bottom: 20px;">
     <a href="{{ url_for('home') }}" style="text-decoration: none;">
         <button style="background-color: black; color: white; font-size: 18px; padding: 10px 20px; 
@@ -10,21 +19,14 @@
     </a>
 </div>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jewelry Store</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
-</head>
-<body>
-
 <!-- Navigation Bar -->
 <nav style="display: flex; justify-content: space-between; align-items: center; padding: 10px;">
     <div>
         {% if session.get('user') %}
             <p>Welcome, {{ session.get('user') }}!  
                 <a href="{{ url_for('logout') }}">Logout</a> |  
-                <a href="{{ url_for('change_password') }}">Change Password</a>
+                <a href="{{ url_for('change_password') }}">Change Password</a> |
+                <a href="{{ url_for('delete_account') }}">Delete Account</a>
             </p>
         {% else %}
             <p>Browsing as a Guest.  
@@ -42,14 +44,13 @@
         </a>
     </div>
 </nav>
+
 <hr>
 
+<h1>Welcome to Our Jewelry Store</h1>
+<p>Find the perfect piece of jewelry for any occasion.</p>
 
-    </nav>
-    <hr>    
-    <h1>Welcome to Our Jewelry Store</h1>
-    <p>Find the perfect piece of jewelry for any occasion.</p>
-    <!-- Customize Your Jewelry Section -->
+<!-- Customize Your Jewelry Section -->
 <div style="text-align: center; margin-top: 30px;">
     <a href="{{ url_for('customize') }}" style="text-decoration: none;">
         <div style="
@@ -70,7 +71,7 @@
     </a>
 </div>
 
-    <!-- Disclaimer Message -->
+<!-- Disclaimer Message -->
 <div style="text-align: center; margin-top: 20px;">
     <p style="font-size: 24px; font-weight: bold; color: red;">
         This is just a project, none of the items are actually for sale.

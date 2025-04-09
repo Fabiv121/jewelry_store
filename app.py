@@ -1,6 +1,7 @@
 import sqlite3
 import bcrypt  # Import bcrypt for password hashing
 from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey123"  # REQUIRED for session handling
@@ -88,26 +89,31 @@ def view_orders():
 
     conn = sqlite3.connect('jewelry_store.db')
     c = conn.cursor()
-    
-    # Fetch all orders for the logged-in user (include price)
-    c.execute("SELECT id, jewelry_type, metal, gemstone, quantity, price FROM orders WHERE user_id = (SELECT id FROM users WHERE username = ?)", (user,))
+
+    # Fetch all orders for the user
+    c.execute('''
+        SELECT id, jewelry_type, metal, gemstone, quantity, price
+        FROM orders
+        WHERE user_id = (SELECT id FROM users WHERE username = ?)
+    ''', (user,))
     orders = c.fetchall()
 
-    # Calculate total quantity
+    # Calculate totals
     c.execute("SELECT SUM(quantity) FROM orders WHERE user_id = (SELECT id FROM users WHERE username = ?)", (user,))
-    total_quantity = c.fetchone()[0] or 0  # Default to 0 if no items
+    total_quantity = c.fetchone()[0] or 0
 
-    # Calculate total price
     c.execute("SELECT SUM(quantity * price) FROM orders WHERE user_id = (SELECT id FROM users WHERE username = ?)", (user,))
-    total_price = c.fetchone()[0] or 0.0  # Default to 0.0 if no items
+    total_price = c.fetchone()[0] or 0.0
 
     conn.close()
 
-    return render_template('orders.html', orders=orders, user=user, total_quantity=total_quantity, total_price=total_price)
+    #  Ensure user, orders, totals are passed to the template
+    return render_template('orders.html', user=user, orders=orders, total_quantity=total_quantity, total_price=total_price)
+
 
 # Run Flask App
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=80, debug=True)
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -116,8 +122,8 @@ def register():
         username = request.form['username']
         password = request.form['password']
 
-        # Hash the password before saving
-        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+        # Hash and decode the password before storing in DB
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
         conn = sqlite3.connect('jewelry_store.db')
         c = conn.cursor()
@@ -132,6 +138,7 @@ def register():
             conn.close()
 
     return render_template('register.html')
+
 
 
 import time  # Import time module for handling timeout
@@ -318,3 +325,58 @@ def update_quantity(order_id):
 def home():
     user = session.get('user')  # Get the user from session
     return render_template('index.html', user=user)
+
+
+@app.route('/checkout', methods=['GET', 'POST'])
+def checkout():
+    if request.method == 'POST':
+        name = request.form.get('name')
+        address = request.form.get('address')
+        payment = request.form.get('payment')
+
+        user = session.get('user')
+
+        if user:
+            conn = sqlite3.connect('jewelry_store.db')
+            c = conn.cursor()
+
+            # Get user ID
+            c.execute("SELECT id FROM users WHERE username = ?", (user,))
+            user_id = c.fetchone()[0]
+
+            # Delete all orders for this user (simulate emptying the cart)
+            c.execute("DELETE FROM orders WHERE user_id = ?", (user_id,))
+            conn.commit()
+            conn.close()
+
+        return render_template('confirmation.html', name=name)
+
+    return render_template('checkout.html')
+
+
+
+@app.route('/delete_account', methods=['GET', 'POST'])
+def delete_account():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        username = session['user']
+
+        conn = sqlite3.connect('jewelry_store.db')
+        c = conn.cursor()
+
+        # Delete orders first (foreign key constraint if added later)
+        c.execute("DELETE FROM orders WHERE user_id = (SELECT id FROM users WHERE username = ?)", (username,))
+
+        # Then delete the user
+        c.execute("DELETE FROM users WHERE username = ?", (username,))
+        conn.commit()
+        conn.close()
+
+        # Log the user out
+        session.pop('user', None)
+
+        return redirect(url_for('home'))
+
+    return render_template('delete_account.html')

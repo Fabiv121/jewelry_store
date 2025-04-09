@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Checkout</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Checkout</h1>
+    <form method="POST">
+        <label>Full Name:</label><br>
+        <input type="text" name="name" required><br><br>
+
+        <label>Shipping Address:</label><br>
+        <input type="text" name="address" required><br><br>
+
+        <label>Payment Method:</label><br>
+        <select name="payment">
+            <option value="credit_card">Credit Card</option>
+            <option value="paypal">PayPal</option>
+        </select><br><br>
+
+        <button type="submit">Place Order</button>
+    </form>
+</body>
+</html>
