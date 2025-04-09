@@ -37,6 +37,16 @@
         {% endif %}
     </div>
 
+    <!-- Track Orders Button -->
+<div style="text-align: center; margin-top: 30px;">
+    <a href="{{ url_for('tracking') }}" style="text-decoration: none;">
+        <button style="background-color: purple; color: white; font-size: 20px; padding: 12px 24px; 
+                       border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
+            📦 Track My Orders
+        </button>
+    </a>
+</div>
+
     <!-- Cart Icon -->
     <div>
         <a href="{{ url_for('view_orders') }}" style="text-decoration: none; color: black;">
