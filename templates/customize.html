@@ -97,25 +97,6 @@
         {% endif %}
     </div>
    
-<!-- User Navigation -->
-<div style="text-align: center; margin-bottom: 20px;">
-    {% if user %}
-        <p>Welcome, <strong>{{ user }}</strong>!  
-            <a href="{{ url_for('logout') }}" style="text-decoration: none; font-weight: bold;">Logout</a>
-            <a href="{{ url_for('delete_account') }}">Delete Account</a>
-
-        </p>
-    {% elif is_guest %}
-        <p>You are browsing as a Guest.</p>
-    {% else %}
-        <p>
-            <a href="{{ url_for('login') }}" style="text-decoration: none; font-weight: bold;">Login</a> |  
-            <a href="{{ url_for('register') }}" style="text-decoration: none; font-weight: bold;">Register</a>
-        </p>
-    {% endif %}
-</div>
-
-
 
 
 
