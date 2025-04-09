@@ -1,28 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
-    <!-- Home Button with Icon at the Top Center -->
-<div style="text-align: center; margin-bottom: 20px;">
-    <a href="{{ url_for('home') }}" style="text-decoration: none;">
-        <button style="background-color: black; color: white; font-size: 18px; padding: 10px 20px; 
-                       border: none; border-radius: 5px; cursor: pointer; display: flex; align-items: center; gap: 10px;">
-            <i class="fa-solid fa-home"></i> Home
-        </button>
-    </a>
-</div>
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
 </head>
+
 <body>
+    <!-- Home Button at the Top Center -->
+    <div style="text-align: center; margin-bottom: 20px;">
+        <a href="{{ url_for('home') }}" style="text-decoration: none;">
+            <button style="background-color: black; color: white; font-size: 18px; padding: 10px 20px; 
+                           border: none; border-radius: 5px; cursor: pointer; display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-home"></i> Home
+            </button>
+        </a>
+    </div>
+
     <h2>Register</h2>
+
+    <!-- Error Message -->
+    {% if error %}
+        <p style="color: red; font-weight: bold;">{{ error }}</p>
+    {% endif %}
+
     <form method="POST">
-        <input type="text" name="username" placeholder="Username" required>
+        <input type="text" name="username" placeholder="Username" value="{{ username or '' }}" required>
         <input type="password" name="password" placeholder="Password" required>
         <button type="submit">Register</button>
     </form>
-    <p>Already have an account? <a href="/login">Login here</a></p>
+
+    <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
 </body>
 </html>

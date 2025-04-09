@@ -122,7 +122,7 @@ def register():
         username = request.form['username']
         password = request.form['password']
 
-        # Hash and decode the password before storing in DB
+        # Hash and decode the password before storing
         hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
         conn = sqlite3.connect('jewelry_store.db')
@@ -130,10 +130,11 @@ def register():
         try:
             c.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, hashed_password))
             conn.commit()
-            session['user'] = username  # Log in the user immediately after signup
+            session['user'] = username
             return redirect(url_for('customize'))
         except sqlite3.IntegrityError:
-            return "Username already exists. Try a different one."
+            error = "Username already exists. Please choose a different one."
+            return render_template('register.html', error=error, username=username)
         finally:
             conn.close()
 

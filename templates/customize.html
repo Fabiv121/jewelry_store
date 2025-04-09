@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-    <!-- Home Button with Icon at the Top Center -->
+<!-- Home Button with Icon at the Top Center -->
 <div style="text-align: center; margin-bottom: 20px;">
     <a href="{{ url_for('home') }}" style="text-decoration: none;">
         <button style="background-color: black; color: white; font-size: 18px; padding: 10px 20px; 
@@ -81,7 +81,21 @@
 
 <!-- Navigation Bar -->
 <nav style="display: flex; justify-content: space-between; align-items: center; padding: 10px;">
-
+    <div>
+        {% if session.get('user') %}
+            <p>Welcome, {{ session.get('user') }}!  
+                <a href="{{ url_for('logout') }}">Logout</a> |  
+                <a href="{{ url_for('change_password') }}">Change Password</a> |
+                <a href="{{ url_for('delete_account') }}">Delete Account</a>
+            </p>
+        {% else %}
+            <p>Browsing as a Guest.  
+                <a href="{{ url_for('login') }}">Login</a> |  
+                <a href="{{ url_for('register') }}">Register</a> |
+                <a href="{{ url_for('customize', guest='true') }}" style="text-decoration: none; font-weight: bold;">Guest</a>
+            </p>
+        {% endif %}
+    </div>
    
 <!-- User Navigation -->
 <div style="text-align: center; margin-bottom: 20px;">
