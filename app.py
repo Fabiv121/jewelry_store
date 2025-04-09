@@ -336,6 +336,7 @@ def checkout():
         payment = request.form.get('payment')
 
         user = session.get('user')
+        orders = []
 
         if user:
             conn = sqlite3.connect('jewelry_store.db')
@@ -345,12 +346,20 @@ def checkout():
             c.execute("SELECT id FROM users WHERE username = ?", (user,))
             user_id = c.fetchone()[0]
 
+            # Fetch user's current orders before deleting
+            c.execute("""
+                SELECT jewelry_type, metal, gemstone, quantity, price 
+                FROM orders 
+                WHERE user_id = ?
+            """, (user_id,))
+            orders = c.fetchall()
+
             # Delete all orders for this user (simulate emptying the cart)
             c.execute("DELETE FROM orders WHERE user_id = ?", (user_id,))
             conn.commit()
             conn.close()
 
-        return render_template('confirmation.html', name=name)
+        return render_template('confirmation.html', name=name, orders=orders)
 
     return render_template('checkout.html')
 
