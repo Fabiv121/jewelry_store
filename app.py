@@ -3,8 +3,13 @@ import bcrypt  # Import bcrypt for password hashing
 from flask import Flask, render_template, request, redirect, url_for, session
 from flask import Flask, render_template, request, redirect, url_for
 
+import os  # Make sure this is at the top of the file
+
+
+
 app = Flask(__name__)
-app.secret_key = "supersecretkey123"  # REQUIRED for session handling
+app.secret_key = os.getenv("SECRET_KEY", "supersecretkey123")  # fallback default
+app.debug = True
 
 
 # Database Initialization
@@ -16,11 +21,23 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             jewelry_type TEXT,
             metal TEXT,
-            gemstone TEXT
+            gemstone TEXT,
+            user_id INTEGER,
+            quantity INTEGER DEFAULT 1,
+            price REAL DEFAULT 0.0,
+            status TEXT DEFAULT 'Processing'
+        )
+    ''')
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE,
+            password TEXT
         )
     ''')
     conn.commit()
     conn.close()
+
 
 # Initialize the database when the app starts
 init_db()
@@ -55,7 +72,12 @@ def customize():
             c = conn.cursor()
 
             c.execute("SELECT id FROM users WHERE username = ?", (user,))
-            user_id = c.fetchone()[0]
+            user_row = c.fetchone()
+            if not user_row:
+                conn.close()
+                return redirect(url_for('login'))  # or handle it gracefully
+            user_id = user_row[0]
+
 
             # Check if the item already exists
             c.execute("""
@@ -154,9 +176,6 @@ def view_orders():
     )
 
 
-# Run Flask App
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80, debug=True)
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -387,7 +406,11 @@ def checkout():
 
             # Get user ID
             c.execute("SELECT id FROM users WHERE username = ?", (user,))
-            user_id = c.fetchone()[0]
+            user_row = c.fetchone()
+            if not user_row:
+                conn.close()
+                return redirect(url_for('login'))  # fallback to login
+            user_id = user_row[0]
 
             # Fetch user's current orders before deleting
             c.execute("""
@@ -433,3 +456,10 @@ def delete_account():
         return redirect(url_for('home'))
 
     return render_template('delete_account.html')
+
+
+
+# Run Flask App
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5050, debug=True)
+

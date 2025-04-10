@@ -4,6 +4,47 @@
     <title>Checkout</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
+
+<!-- Home Button with Icon at the Top Center -->
+<div style="text-align: center; margin-bottom: 20px;">
+    <a href="{{ url_for('home') }}" style="text-decoration: none;">
+        <button style="background-color: black; color: white; font-size: 18px; padding: 10px 20px; 
+                       border: none; border-radius: 5px; cursor: pointer; display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-home"></i> Home
+        </button>
+    </a>
+</div>
+
+<!-- Dummy change for git -->
+ <!-- Trigger redeploy -->
+
+
+<!-- Navigation Bar -->
+<nav style="display: flex; justify-content: space-between; align-items: center; padding: 10px;">
+    <div>
+        {% if session.get('user') %}
+            <p>Welcome, {{ session.get('user') }}!  
+                <a href="{{ url_for('logout') }}">Logout</a> | 
+            </p>
+        {% else %}
+            <p>Browsing as a Guest.  
+                <a href="{{ url_for('login') }}">Login</a> |  
+                <a href="{{ url_for('register') }}">Register</a> |
+                <a href="{{ url_for('customize', guest='true') }}" style="text-decoration: none; font-weight: bold;">Guest</a>
+            </p>
+        {% endif %}
+    </div>
+
+    <!-- Cart Icon -->
+    <div>
+        <a href="{{ url_for('view_orders') }}" style="text-decoration: none; color: black;">
+            🛒 <span style="font-size: 24px;">Cart</span>
+        </a>
+    </div>
+</nav>
+<hr>
+
+
 <body>
     <h1>Checkout</h1>
     <form method="POST">

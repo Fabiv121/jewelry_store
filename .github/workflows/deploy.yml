@@ -1,0 +1,29 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Start SSH agent and add deploy key
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.EC2_DEPLOY_KEY }}
+
+      - name: Deploy to EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ubuntu@ec2-3-92-32-93.compute-1.amazonaws.com << 'EOF'
+            cd ~/jewelry_store
+            git pull origin main
+            source venv/bin/activate
+            sudo fuser -k 5050/tcp || true
+            nohup gunicorn --workers 3 --bind 0.0.0.0:5050 app:app &
+          EOF
